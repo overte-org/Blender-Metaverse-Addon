@@ -1,13 +1,12 @@
 # Blender Metaverse Toolkit Blender Add-on (MVT) AddOn
 
-Plugin ("Project Hermes") is a plugin for Blender to allow for easier content creation originally created for importing for the High Fidelity Metaverse Platform. 
+Plugin ("Project Hermes") is a plugin for Blender to allow for easier content creation originally created for importing for the Vircadia Metaverse Platform. 
 
-It has now being expanded to support additional platforms. as the official High Fidelity platform is turning off, while its forks are going to live their separate lives.
-This plugin now will focus on supporting as many platforms as possible.
+This plugin supports multiple platforms.
 
 Currently Supports
 
-- HiFi and Forks
+- Vircadia
 - VRC (NeosVR by Proxy)
 - Tower Unite
 
@@ -42,7 +41,7 @@ On Windows this is under `%APPDATA%/Blender Foundation/Blender/<BlenderVersion>/
    - `Set Non-Diffuse ColorData` and `Auto Correct on Save` Tools that fixes color spaces for Roughness, Normal, and Metallic textures for preview
    - `Textures to Mask` and `Textures to Png` utility helpers.
 - Mesh Tools:
-    - `Merge Modifiers & Shapekeys` attempt to merge modifiers onto Mesh with Shapekeys using Przemysław Bągard's ApplyModifierForObjectWithShapeKeys script, now included with this plugin, but if an existing copy exists, it is used instead
+    - `Merge Modifiers & Shapekeys` attempt to merge modifiers onto Mesh with Shapekeys using Przemysław Bągard's 'ApplyModifierForObjectWithShapeKeys' script, now included with this plugin, but if an existing copy exists, it is used instead
     - `Clean Unused Vertex Groups` Clean model from vertex groups that are not in its current skeleton.
 - Armature Tools:
     - `Test Avatar Rest Pose` - Attempts to detect type of skeleton and applies an absolute T-Pose by the platform reference
@@ -50,23 +49,23 @@ On Windows this is under `%APPDATA%/Blender Foundation/Blender/<BlenderVersion>/
     - `Match Reference Rolls` - Uses rolls from the detected reference skeleton.
 
 
-### High Fidelity Tools
+### Vircadia Tools
 
-Generic Toolset allowing one to create content for High Fidelity forks, from 
+Generic Toolset allowing one to create content for Vircadia forks, from 
 
 - A new Panel on the `3D View`'s right tool set is added, labled `MVT: High Fidelity`
 - Armature Tools
-    - `Add Hifi Armature` - Adds an Armature which is compatible with High Fidelity forks, has all the naming conventions in place
+    - `Add Hifi Armature` - Adds an Armature which is compatible with Vircadia, has all the naming conventions in place
     - `Set Bone Physical` - (Armature Edit mode only) Adds a prefix to selected bones for Scripts in High fidelity for physical simulation
     - `Remove Bone Physical` - (Armature Edit mode only) Removes prefix from selected bones for Scripts in High fidelity for physical simulation
 - Avatar Converters
     - `Custom Avatar` - Attempts to bind of the model to a HF specific Bone naming and rotations.
-    - `MMD Avatar` - Translates and fixes MMD models and their materials for them to work in High Fidelity. [Full MMD Avatar import tutorial here](https://www.youtube.com/watch?v=tJX8VUPZLKQ)
+    - `MMD Avatar` - Translates and fixes MMD models and their materials for them to work in Vircadia. [Full MMD Avatar import tutorial here](https://www.youtube.com/watch?v=tJX8VUPZLKQ)
 
 
-#### Hifi Export Tools:
+#### Vircadia Export Tools:
 
-- `File > Export > Hifi FBX`: Custom FBX that binds to the `Principled BDSF` into a format HiFi understands
+- `File > Export > Hifi FBX`: Custom FBX that binds to the `Principled BDSF` into a format Vircadia understands
 - `File > Export > Hifi Avatar FST`: Exports Avatar, applies necessary steps for avatar to work in High Fifelity. 
    - Supports Embedded textures: Exports Textures embedded to file
    - Supports Selected Only: Exports Selected only
@@ -75,14 +74,14 @@ Generic Toolset allowing one to create content for High Fidelity forks, from
     - Marketplace / Base URL : This is the folder path for your marketplace or external server address. Simply paste the directory where you will upload the files here, and the json file will have the urls automatically appended to them. This is not optional and must be set prior to exporting: You will otherwise have an error message
     - Clone Scene prior to export
 
-#### Importing from Hifi:
-The add-on allows you to import **primitive entities**  from High Fidelity. In High Fidelity,  select the entities you want to export and press export. 
+#### Importing from Vircadia:
+The add-on allows you to import **primitive entities** from Vircadia. In Vircadia, select the entities you want to export and press export. 
 
 In Blender, You can then import these entities with `File > Import > HiFi Metaverse Scene JSON`
 
-You can then set materials to the objects via the material panel, modify the mesh, do uv mapping corrections.
+You can then set materials to the objects via the material panel, modify the mesh, do UV mapping corrections.
 
-#### Hifi Import Settings
+#### Vircadia Import Settings
 
 - Use UV Sphere: Instead of a Quad sphere, use a UV sphere for the base primitive
 - Join Mesh Children: If Boolean is set to None, join Children with their Parents into a Single Mesh
