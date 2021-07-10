@@ -28,11 +28,9 @@ class SkeletonTypes(Enum):
         # TODO: Better Detection Methods Later using skeletons.
 
         if obj.data.bones.find("Chest"):
-            print("VRC Avatar Detected")
             return SkeletonTypes.VRC
 
         if obj.data.bones.find("Spine2") or obj.data.bones.find("HeadTop_End"):
-            print("Vircadia Avatar Detected")
             return SkeletonTypes.HIFI
 
         for skeleton_type in SkeletonTypes:
@@ -40,4 +38,5 @@ class SkeletonTypes(Enum):
                 return skeleton_type
 
         return None
+
 

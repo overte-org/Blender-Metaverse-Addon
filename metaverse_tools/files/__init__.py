@@ -18,9 +18,8 @@
 # ##### END GPL LICENSE BLOCK #####
 # Copyright 2019 Matti 'Menithal' Lahtinen
 
-import bpy
 from . import (
     hifi_json,
-    fst,
-    facerig
+    fst
 )
+import bpy
