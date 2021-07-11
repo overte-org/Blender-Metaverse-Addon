@@ -406,6 +406,8 @@ def rename_bones_and_fix_most_things(self, context):
     except:
         print("Console was toggled")
 
+    bpy.context.view_layer.objects.active = armature_obj
+
     if self.fix_rolls:
         bpy.ops.metaverse_toolset.hf_fix_bone_rolls('INVOKE_DEFAULT')
         
