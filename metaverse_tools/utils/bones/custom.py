@@ -454,7 +454,7 @@ class AVATAR_OT_MVT_TOOLSET_Custom_Avatar_Binder_Operator(bpy.types.Operator):
         if self.armatures:
             armature = context.scene.objects[self.armatures]
             if context.active_object:
-                if context.active_object.mode == "EDIT":
+                if context.active_object.mode != "OBJECT":
                     bpy.ops.object.mode_set(mode="OBJECT")
 
             bpy.ops.object.select_all(action='DESELECT')
@@ -483,7 +483,7 @@ class AVATAR_OT_MVT_TOOLSET_Custom_Avatar_Binder_Operator(bpy.types.Operator):
         # context.scene.object[self.armatures]
         # TODO: If avatar is not selected by default.
 
-        if self.armatures is not "":
+        if self.armatures != "":
             data = context.scene.objects[self.armatures].data
 
             # Do Filtering of the data set
@@ -645,7 +645,7 @@ class AVATAR_OT_MVT_TOOLSET_Avatar_Rebinder_Operator(bpy.types.Operator):
         layout.label(text="Experimental Feature. Please report any issues.")
         layout.label(text="Everything is mirrored.")
 
-        if self.armatures is not "":
+        if self.armatures != "":
             data = context.scene.objects[self.armatures].data
 
             def row_builder(target: str):
