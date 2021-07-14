@@ -411,10 +411,20 @@ def pin_common_bones(obj, fix_rolls=True):
     bpy.ops.object.mode_set(mode='OBJECT')
 
 
-def get_bone_side_and_mirrored(bone_name) -> BoneMirrorableInfo : 
-    cleaned_bones = camel_case_split(bone_name)
-    cleaned_bones = bone_name.replace(".", "_").replace(" ", "_")
-    split = cleaned_bones.split("_")
+def get_bone_side_and_mirrored(bone_name, split_underscores=True, split_camel_case=True) -> BoneMirrorableInfo : 
+
+    cleaned_bones = None
+    split = None
+    if(split_camel_case):
+        split = camel_case_split(bone_name)
+
+    if(split_underscores):
+        cleaned_bones = bone_name.replace(".", "_").replace(" ", "_")
+        split = cleaned_bones.split("_")
+    
+    if( (not split_underscores) and (not split_camel_case)):
+        split = bone_name.split(".")
+
     length = len(split)
     if length == 1:
         if "left" in split[0].lower():

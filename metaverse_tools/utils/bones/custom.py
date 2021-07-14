@@ -202,18 +202,33 @@ def update_bone_name(edit_bones, from_name, to_name):
         bpy.ops.object.mode_set(mode="EDIT")
 
 
-def update_bone_name_mirrored(edit_bones, from_name, to_name):
+def update_bone_name_mirrored(edit_bones, from_name, to_name, split_underscores=True, split_camel_case=True):
     print(' - update_bone_name_mirrored', from_name, to_name)
-    mirrored = bones_builder.get_bone_side_and_mirrored(from_name)
+    mirrored = bones_builder.get_bone_side_and_mirrored(from_name, split_underscores, split_camel_case)
     if mirrored is not None:
         update_bone_name(edit_bones, from_name, mirrored.side + to_name)
         update_bone_name(edit_bones, mirrored.mirror_name,
                          mirrored.mirror + to_name)
 
 
-def update_bone_name_chained_mirrored(edit_bones, from_name, to_name):
+def update_bone_name_chained_mirrored(edit_bones, from_name, to_name, split_underscores=True, split_camel_case=True, last_index = 0):
     print(' - update_bone_name_chained_mirrored', from_name, to_name)
-    bone = bones_builder.get_bone_side_and_mirrored(from_name)
+    bone = bones_builder.get_bone_side_and_mirrored(from_name, split_underscores, split_camel_case)
+
+    if bone is not None and bone.index is None:
+        next_bone_name = None
+        current_bone = edit_bones.get(from_name)
+        if(current_bone.children):
+            next_bone_name = current_bone.children[0].name
+
+        bone_index = str(int(last_index+1))
+        update_bone_name(edit_bones, bone.name,
+                         bone.side + to_name + bone_index)
+        update_bone_name(edit_bones, bone.mirror_name,
+                         bone.mirror + to_name + bone_index)
+        if(next_bone_name is not None):
+            print("going down chain to "+ next_bone_name)
+            update_bone_name_chained_mirrored(edit_bones, next_bone_name, to_name, split_underscores, split_camel_case, last_index+1)
 
     if bone is not None and bone.index is not None:
         update_bone_name(edit_bones, bone.name,
@@ -279,24 +294,24 @@ def rename_bones_and_fix_most_things(self, context):
 
     print("--------")
     print("Updating Bone Names Mirrored")
-    update_bone_name_mirrored(ebones, self.eye, "Eye")
-    update_bone_name_mirrored(ebones, self.shoulder, "Shoulder")
-    update_bone_name_mirrored(ebones, self.arm, "Arm")
-    update_bone_name_mirrored(ebones, self.fore_arm, "ForeArm")
-    update_bone_name_mirrored(ebones, self.hand, "Hand")
+    update_bone_name_mirrored(ebones, self.eye, "Eye", self.bone_names_split_underscore, self.bone_names_split_camel_case)
+    update_bone_name_mirrored(ebones, self.shoulder, "Shoulder", self.bone_names_split_underscore, self.bone_names_split_camel_case)
+    update_bone_name_mirrored(ebones, self.arm, "Arm", self.bone_names_split_underscore, self.bone_names_split_camel_case)
+    update_bone_name_mirrored(ebones, self.fore_arm, "ForeArm", self.bone_names_split_underscore, self.bone_names_split_camel_case)
+    update_bone_name_mirrored(ebones, self.hand, "Hand", self.bone_names_split_underscore, self.bone_names_split_camel_case)
 
-    update_bone_name_mirrored(ebones, self.up_leg, "UpLeg")
-    update_bone_name_mirrored(ebones, self.leg, "Leg")
-    update_bone_name_mirrored(ebones, self.foot, "Foot")
-    update_bone_name_mirrored(ebones, self.toe, "Toe")
+    update_bone_name_mirrored(ebones, self.up_leg, "UpLeg", self.bone_names_split_underscore, self.bone_names_split_camel_case)
+    update_bone_name_mirrored(ebones, self.leg, "Leg", self.bone_names_split_underscore, self.bone_names_split_camel_case)
+    update_bone_name_mirrored(ebones, self.foot, "Foot", self.bone_names_split_underscore, self.bone_names_split_camel_case)
+    update_bone_name_mirrored(ebones, self.toe, "Toe", self.bone_names_split_underscore, self.bone_names_split_camel_case)
 
     print("--------")
     print("Updating Bone Names Chained Mirrored")
-    update_bone_name_chained_mirrored(ebones, self.hand_thumb, "HandThumb")
-    update_bone_name_chained_mirrored(ebones, self.hand_index, "HandIndex")
-    update_bone_name_chained_mirrored(ebones, self.hand_middle, "HandMiddle")
-    update_bone_name_chained_mirrored(ebones, self.hand_ring, "HandRing")
-    update_bone_name_chained_mirrored(ebones, self.hand_pinky, "HandPinky")
+    update_bone_name_chained_mirrored(ebones, self.hand_thumb, "HandThumb", self.bone_names_split_underscore, self.bone_names_split_camel_case)
+    update_bone_name_chained_mirrored(ebones, self.hand_index, "HandIndex", self.bone_names_split_underscore, self.bone_names_split_camel_case)
+    update_bone_name_chained_mirrored(ebones, self.hand_middle, "HandMiddle", self.bone_names_split_underscore, self.bone_names_split_camel_case)
+    update_bone_name_chained_mirrored(ebones, self.hand_ring, "HandRing", self.bone_names_split_underscore, self.bone_names_split_camel_case)
+    update_bone_name_chained_mirrored(ebones, self.hand_pinky, "HandPinky", self.bone_names_split_underscore, self.bone_names_split_camel_case)
 
     bpy.ops.object.mode_set(mode="OBJECT")
     armature = bpy.data.armatures[self.armature]
@@ -320,10 +335,14 @@ def rename_bones_and_fix_most_things(self, context):
     bones_builder.correct_bone_parents(armature.edit_bones)
     bpy.ops.object.mode_set(mode="OBJECT")
     bpy.ops.object.select_all(action="DESELECT")
-    # TODO: This should be more selective and only affect the armature object's children.
 
-    children = bpy.context.view_layer.objects
+    children = armature_obj.children
+
     for child in children:
+        if not child.visible_get():
+            continue
+
+        bpy.context.view_layer.objects.active = child
 
         child.select_set(state=True)
         if child.type == "ARMATURE":
@@ -337,7 +356,12 @@ def rename_bones_and_fix_most_things(self, context):
             # mesh.clean_unused_vertex_groups(child)
             if spine_was_split:
                 print("Dealing with the Spine split for" + child.name)
-                spine1_weights = child.vertex_groups["Spine1"]
+                spine1_weights = None
+                try:
+                    spine1_weights = child.vertex_groups["Spine1"]
+                except:
+                    pass
+
                 if spine1_weights is not None:
                     spine1_weights.name = "Spine2"
 
@@ -346,7 +370,9 @@ def rename_bones_and_fix_most_things(self, context):
                 # Reset all shapekeys.
                 # TODO: Perhaps dettach this into a function.
                 print("Going Through blendshapes and creating new ones")
-                bpy.ops.object.mode_set(mode="OBJECT")
+                if context.active_object:
+                    if context.active_object.mode != "OBJECT":
+                        bpy.ops.object.mode_set(mode="OBJECT")
                 bpy.ops.object.select_all(action="DESELECT")
                 bpy.context.view_layer.objects.active = child
                 blocks = child.data.shape_keys.key_blocks
@@ -380,6 +406,8 @@ def rename_bones_and_fix_most_things(self, context):
     except:
         print("Console was toggled")
 
+    bpy.context.view_layer.objects.active = armature_obj
+
     if self.fix_rolls:
         bpy.ops.metaverse_toolset.hf_fix_bone_rolls('INVOKE_DEFAULT')
         
@@ -395,7 +423,7 @@ def rename_bones_and_fix_most_things(self, context):
 
 
 class AVATAR_OT_MVT_TOOLSET_Custom_Avatar_Binder_Operator(bpy.types.Operator):
-    """ Avatar Binding Tool allowing one to attempt convert a existing custom skeleton with mesh into a HF compatible skeleton.
+    """ Avatar Binding Tool allowing one to attempt convert a existing custom skeleton with mesh into a Vircadia compatible skeleton.
     """
     bl_idname = "metaverse_toolset.hf_open_custom_avatar_binder"
     bl_label = "Custom Avatar Binding Tool"
@@ -438,6 +466,10 @@ class AVATAR_OT_MVT_TOOLSET_Custom_Avatar_Binder_Operator(bpy.types.Operator):
         default=True, name="Pin Problem Bones", description="Straightens spines and fixes usual feet issues")
     fix_rolls: bpy.props.BoolProperty(
         default=True, name="Fix Rolls", description="Fixes the rolls of all the bones to match the HumanIK reference")
+    bone_names_split_underscore: bpy.props.BoolProperty(
+        default=True, name="Bone side name with underscore", description="For example l_Hand. Dot separator is used when both underscore and CamelCase are disabled (for example Hand.L)")
+    bone_names_split_camel_case: bpy.props.BoolProperty(
+        default=True, name="Bone side name with CamelCase", description="For example l_Hand. Dot separator is used when both underscore and CamelCase are disabled (for example Hand.L)")
     remove_metallic: bpy.props.BoolProperty(
         default=True, name="Remove Metallic", description="Removes pre-emptively specular color to avoid any metallicness issues")
     mask_textures: bpy.props.BoolProperty(default=True, name="Convert Textures to Masked",
@@ -454,7 +486,7 @@ class AVATAR_OT_MVT_TOOLSET_Custom_Avatar_Binder_Operator(bpy.types.Operator):
         if self.armatures:
             armature = context.scene.objects[self.armatures]
             if context.active_object:
-                if context.active_object.mode == "EDIT":
+                if context.active_object.mode != "OBJECT":
                     bpy.ops.object.mode_set(mode="OBJECT")
 
             bpy.ops.object.select_all(action='DESELECT')
@@ -483,7 +515,7 @@ class AVATAR_OT_MVT_TOOLSET_Custom_Avatar_Binder_Operator(bpy.types.Operator):
         # context.scene.object[self.armatures]
         # TODO: If avatar is not selected by default.
 
-        if self.armatures is not "":
+        if self.armatures != "":
             data = context.scene.objects[self.armatures].data
 
             # Do Filtering of the data set
@@ -544,6 +576,8 @@ class AVATAR_OT_MVT_TOOLSET_Custom_Avatar_Binder_Operator(bpy.types.Operator):
             row = column.row()
             row.prop(self, "pin_problems")
             row.prop(self, "fix_rolls")
+            row.prop(self, "bone_names_split_underscore")
+            row.prop(self, "bone_names_split_camel_case")
 
         else:
             print(" No Armatures")
@@ -645,7 +679,7 @@ class AVATAR_OT_MVT_TOOLSET_Avatar_Rebinder_Operator(bpy.types.Operator):
         layout.label(text="Experimental Feature. Please report any issues.")
         layout.label(text="Everything is mirrored.")
 
-        if self.armatures is not "":
+        if self.armatures != "":
             data = context.scene.objects[self.armatures].data
 
             def row_builder(target: str):
