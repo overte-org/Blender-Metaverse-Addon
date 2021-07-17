@@ -1,20 +1,27 @@
-# Blender Metaverse Toolkit Blender Add-on (MVT) AddOn
+# Blender Metaverse Toolkit (MVT) Blender Add-on
 
-Plugin ("Project Hermes") is a plugin for Blender to allow for easier content creation originally created for importing for the Vircadia Metaverse Platform. 
+This is a plugin for Blender to allow for easier content creation in the Vircadia Metaverse platform.
 
 This plugin supports multiple platforms.
 
-Currently Supports
+Currently supports:
 
 - Vircadia
 - VRC (NeosVR by Proxy)
 - Tower Unite
 
-## 2.0 works only with 2.81 or later, use older version for 2.80.
+### 2.0 works only with 2.81 or later, use an older version for 2.80.
+
+## Contribution
+
+If you would like to contribute to this plugin's continued maintenance, take a look at the open issues and see if there is anything you might be able to help with!
+
+This plugin was originally created by [Menithal](https://github.com/Menithal) as "Project Hermes" for the High Fidelity Virtual Reality platform.
 
 # Installation Guide
 
 ## Simple
+
 Open the Github page, Go to releases and download the `metaverse_tools.zip` zip file. 
 
 In Blender. Goto `User Preferences`, and `Add-ons`. From there `Install Add-on from File` and select the Zip file that we downloaded.
@@ -32,7 +39,7 @@ Copy `metaverse_tools` folder to your Blender Addons Directory.
 On Windows this is under `%APPDATA%/Blender Foundation/Blender/<BlenderVersion>/addons`
 
 
-# Utility Functions:
+# Utility Functions
 
 ### General Tools
 
@@ -63,7 +70,7 @@ Generic Toolset allowing one to create content for Vircadia forks, from
     - `MMD Avatar` - Translates and fixes MMD models and their materials for them to work in Vircadia. [Full MMD Avatar import tutorial here](https://www.youtube.com/watch?v=tJX8VUPZLKQ)
 
 
-#### Vircadia Export Tools:
+#### Vircadia Export Tools
 
 - `File > Export > Hifi FBX`: Custom FBX that binds to the `Principled BDSF` into a format Vircadia understands
 - `File > Export > Hifi Avatar FST`: Exports Avatar, applies necessary steps for avatar to work in High Fifelity. 
@@ -74,7 +81,8 @@ Generic Toolset allowing one to create content for Vircadia forks, from
     - Marketplace / Base URL : This is the folder path for your marketplace or external server address. Simply paste the directory where you will upload the files here, and the json file will have the urls automatically appended to them. This is not optional and must be set prior to exporting: You will otherwise have an error message
     - Clone Scene prior to export
 
-#### Importing from Vircadia:
+#### Importing from Vircadia
+
 The add-on allows you to import **primitive entities** from Vircadia. In Vircadia, select the entities you want to export and press export. 
 
 In Blender, You can then import these entities with `File > Import > HiFi Metaverse Scene JSON`
@@ -92,10 +100,9 @@ You can then set materials to the objects via the material panel, modify the mes
     - BMesh: Experimental: Use BMesh solver to solve for mesh
     - Carve: Experimental Use Carge solver to solve for mesh
 
-If Entity is not Child of another entity, no Join is done. Only Children are merged with their Parents
+If Entity is not Child of another entity, no Join is done. Only Children are merged with their Parents.
 
-Note that Boolean operations work differently, and some may not keep the UV Unwrapping correctly in some situations. Use at your own risk
-
+*Note: Boolean operations work differently, and some may not keep the UV Unwrapping correctly in some situations. Use at your own risk.*
 
 ### VRChat / Neos Tools (WIP) 
 
@@ -118,7 +125,7 @@ Work in progress module to try to stream line some "gotchas" when converting ava
     - `Fix Common Issues` - Utility function to remove all weights for  root, and all the twist bones that tend to cause issues.
 
 
-### Generic Rigging tools:
+### Generic Rigging tools
 
 Mostly Tools for assisting with creating rigs for animations into various platforms and engines.
 
@@ -138,7 +145,7 @@ Mostly Tools for assisting with creating rigs for animations into various platfo
     - `Clear Custom Shapes` - Clears all custom bone shapes.
 
 
-# Changelog:
+# Changelog
 
 ### 2.1.0
 - Added Hotfix #29 and #28 Relating to Hifi FBX and the FBX changes in 2.8
