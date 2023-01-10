@@ -21,19 +21,20 @@
 
 import bpy
 from bpy_extras.io_utils import (
-    ImportHelper,
     ExportHelper,
     orientation_helper,
     path_reference_mode,
     axis_conversion,
 )
 
-
-from bpy.props import *
+from bpy.props import (
+    StringProperty,
+    BoolProperty,
+    FloatProperty,
+    EnumProperty,
+)
 
 from . import mod_export_fbx_bin
-from bpy.types import AddonPreferences
-from bpy.app.handlers import persistent
 
 
 @orientation_helper(axis_forward='-Z', axis_up='Y')
@@ -127,7 +128,7 @@ class EXPORT_OT_MVT_TOOLSET_FBX(bpy.types.Operator, ExportHelper):
     )
     use_mesh_modifiers_render: BoolProperty(
         name="Use Modifiers Render Setting",
-        description="Use render settings when applying modifiers to mesh objects",
+        description="Use render settings when applying modifiers to mesh objects (DISABLED in Blender 2.8)",
         default=True,
     )
     mesh_smooth_type: EnumProperty(
@@ -342,7 +343,6 @@ class EXPORT_OT_MVT_TOOLSET_FBX(bpy.types.Operator, ExportHelper):
         return self.batch_mode == 'OFF'
 
     def execute(self, context):
-        from mathutils import Matrix
         if not self.filepath:
             raise Exception("filepath not set")
 
