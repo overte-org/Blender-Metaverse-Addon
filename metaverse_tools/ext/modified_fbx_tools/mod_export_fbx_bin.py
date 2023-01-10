@@ -24,24 +24,16 @@
 # HifiShaderWrapper / Stingray Modifications by Matti 'Anthony' Lahtinen
 
 import array
-import math
 import os
 import time
 import bpy
-import bpy_extras
-
-from itertools import chain
-
-from bpy_extras import node_shader_utils
-
 from mathutils import Vector, Matrix
-
 
 import io_scene_fbx
 from io_scene_fbx import encode_bin, data_types, fbx_utils
 from io_scene_fbx.fbx_utils import (
     # Constants.
-    FBX_VERSION, 
+    FBX_VERSION,
     FBX_MATERIAL_VERSION, FBX_TEXTURE_VERSION,
     BLENDER_OTHER_OBJECT_TYPES, BLENDER_OBJECT_TYPES_MESHLIKE,
     # Miscellaneous utils.
@@ -53,7 +45,7 @@ from io_scene_fbx.fbx_utils import (
     # UUID from key.
     get_fbx_uuid_from_key,
     # Key generators.
-    get_blenderID_key, 
+    get_blenderID_key,
     get_blender_mesh_shape_key, get_blender_mesh_shape_channel_key,
     get_blender_empty_key,
     get_blender_nodetexture_key,
@@ -112,11 +104,10 @@ from io_scene_fbx.export_fbx_bin import (
     fbx_definitions_elements,
     fbx_connections_elements,
     fbx_takes_elements,
-    )
+)
 
 from metaverse_tools.utils.helpers.materials import HifiShaderWrapper
 # Save fbx_objects_elements, save_single, save
-
 
 
 # Mapping Blender -> FBX (principled_socket_name, fbx_name).
@@ -126,8 +117,9 @@ HIFI_SPECIFIC_SOCKETS_FBX = (
     ("metallic_texture", b"tex_metallic_map"),
     ("normalmap_texture", b"tex_normal_map"),
     ("roughness_texture", b"tex_roughness_map"),
-    ("emission_texture", b"tex_emissive_map"), 
+    ("emission_texture", b"tex_emissive_map"),
 )
+
 
 def fbx_metav_toolset_data_material_elements(root, ma, scene_data):
     """
@@ -153,35 +145,35 @@ def fbx_metav_toolset_data_material_elements(root, ma, scene_data):
 
     tmpl = elem_props_template_init(scene_data.templates, b"Material")
     props = elem_properties(fbx_ma)
-    
+
     # Absolutely not Standard, but Autodesk doesnt give a fuck apparently about what FBX Standard really is anymore.
     # Lets Cheat and shim some FBX Stingray features in until Hifi supports proper GLTF stuff.
     # This Avoids also any issues with the hifi reading some stuff proper
-    # Basically Forcing thee FBX Serializer to actually just think this is an PBS material, not a "Blender one."  
+    # Basically Forcing thee FBX Serializer to actually just think this is an PBS material, not a "Blender one."
 
     elem_props_template_set(tmpl, props, "p_string", b"ShadingModel", ma_type.decode())
 
     # Not in Principled BSDF, so assuming always 1
     elem_props_template_set(tmpl, props, "p_number", b"DiffuseFactor", 1.0)
-    
+
     # --------
     # https://github.com/highfidelity/hifi/blob/d88bee89e4204c5dd167e0e10ff8ba3d91a26696/libraries/fbx/src/FBXSerializer.cpp
-    # -------- 
-    ## Additionally there is tex_ao_map and ambientcolor / ambientfactor that neesd to investigate, someday. TODO: -matti
+    # --------
+    # Additionally there is tex_ao_map and ambientcolor / ambientfactor that neesd to investigate, someday. TODO: -matti
     elem_props_template_set(tmpl, props, "p_color", b"AmbientColor", ambient_color)
     elem_props_template_set(tmpl, props, "p_number", b"AmbientFactor", 0.0)
 
-    #elem_props_template_set(tmpl, props, "p_color", b"TransparentColor", ma_wrap.base_color)
-    #elem_props_template_set(tmpl, props, "p_number", b"TransparencyFactor", ma_wrap.transparency)
-    #elem_props_template_set(tmpl, props, "p_number", b"Opacity", 1.0 - ma_wrap.transparency)
+    # elem_props_template_set(tmpl, props, "p_color", b"TransparentColor", ma_wrap.base_color)
+    # elem_props_template_set(tmpl, props, "p_number", b"TransparencyFactor", ma_wrap.transparency)
+    # elem_props_template_set(tmpl, props, "p_number", b"Opacity", 1.0 - ma_wrap.transparency)
 
     elem_props_template_set(tmpl, props, "p_vector_3d", b"NormalMap", (0.0, 0.0, 0.0))
-    
+
     if ma_wrap.normalmap_texture is not None:
         elem_props_template_set(tmpl, props, "p_bool", b"Maya|use_normal_map", True)
-   
+
     # TODO: Perhaps Additional someday ? -matti
-    elem_props_template_set(tmpl, props, "p_color", b"SpecularColor",(1.0, 1.0, 1.0))
+    elem_props_template_set(tmpl, props, "p_color", b"SpecularColor", (1.0, 1.0, 1.0))
     elem_props_template_set(tmpl, props, "p_number", b"SpecularFactor", 0.0)
     # elem_props_template_set(tmpl, props, "p_number", b"SpecularFactor", ma_wrap.specular / 2.0)
 
@@ -192,7 +184,7 @@ def fbx_metav_toolset_data_material_elements(root, ma, scene_data):
         elem_props_template_set(tmpl, props, "p_color", b"DiffuseColor", (1.0, 1.0, 1.0))
         elem_props_template_set(tmpl, props, "p_color", b"Maya|base_color", (1.0, 1.0, 1.0))
         elem_props_template_set(tmpl, props, "p_bool", b"Maya|use_color_map", True)
-    else: 
+    else:
         print("No Color Texture")
         elem_props_template_set(tmpl, props, "p_color", b"DiffuseColor", ma_wrap.base_color)
         elem_props_template_set(tmpl, props, "p_color", b"Maya|base_color", ma_wrap.base_color)
@@ -210,13 +202,14 @@ def fbx_metav_toolset_data_material_elements(root, ma, scene_data):
 
     elem_props_template_set(tmpl, props, "p_number", b"Metallic", ma_wrap.metallic)
     elem_props_template_set(tmpl, props, "p_number", b"Maya|metallic", ma_wrap.metallic)
-    
+
     if ma_wrap.metallic_texture is not None:
         elem_props_template_set(tmpl, props, "p_bool", b"Maya|use_metallic_map", True)
 
     elem_props_template_set(tmpl, props, "p_number", b"EmissiveFactor", 1.0)
-    elem_props_template_set(tmpl, props, "p_number", b"Maya|emissive_intensity", 1.0) #TODO: - matti Not apparently used by Hifi atm
-    
+    # TODO: - matti Not apparently used by Hifi atm
+    elem_props_template_set(tmpl, props, "p_number", b"Maya|emissive_intensity", 1.0)
+
     if ma_wrap.emission_texture is not None:
         elem_props_template_set(tmpl, props, "p_color", b"EmissiveColor", (1.0, 1.0, 1.0))
         elem_props_template_set(tmpl, props, "p_color", b"Maya|emissive", (1.0, 1.0, 1.0))
@@ -225,9 +218,7 @@ def fbx_metav_toolset_data_material_elements(root, ma, scene_data):
         elem_props_template_set(tmpl, props, "p_color", b"EmissiveColor", ma_wrap.emission)
         elem_props_template_set(tmpl, props, "p_color", b"Maya|emissive", ma_wrap.emission)
 
-
     elem_props_template_finalize(tmpl, props)
-
 
     # Custom properties.
     if scene_data.settings.use_custom_props:
@@ -243,7 +234,7 @@ def fbx_metav_toolset_data_texture_file_elements(root, blender_tex_key, scene_da
     #     For now assuming most logical and simple stuff.
 
     ma, sock_name = blender_tex_key
-    
+
     ma_wrap = HifiShaderWrapper(ma, is_readonly=True)
     tex_key, _fbx_prop = scene_data.data_textures[blender_tex_key]
     tex = getattr(ma_wrap, sock_name)
@@ -264,9 +255,9 @@ def fbx_metav_toolset_data_texture_file_elements(root, blender_tex_key, scene_da
     alpha_source = 0  # None
     if img.alpha_mode != 'NONE':
         # ~ if tex.texture.use_calculate_alpha:
-            # ~ alpha_source = 1  # RGBIntensity as alpha.
+        # ~ alpha_source = 1  # RGBIntensity as alpha.
         # ~ else:
-            # ~ alpha_source = 2  # Black, i.e. alpha channel.
+        # ~ alpha_source = 2  # Black, i.e. alpha channel.
         alpha_source = 2  # Black, i.e. alpha channel.
     # BlendMode not useful for now, only affects layered textures afaics.
     mapping = 0  # UV.
@@ -316,7 +307,7 @@ def fbx_data_material_elements(root, ma, scene_data):
     Write the Material data block.
     """
     fbx_metav_toolset_data_material_elements(root, ma, scene_data)
-        
+
 
 # Contains PrincipledBSDFWrapper
 def fbx_data_texture_file_elements(root, blender_tex_key, scene_data):
@@ -327,12 +318,15 @@ def fbx_data_texture_file_elements(root, blender_tex_key, scene_data):
     fbx_metav_toolset_data_texture_file_elements(root, blender_tex_key, scene_data)
 
 # Contains PrincipledBSDFWrapper
+
+
 def fbx_data_from_scene(scene, depsgraph, settings):
     """
     Do some pre-processing over scene's data...
     """
     objtypes = settings.object_types
-    dp_objtypes = objtypes - {'ARMATURE'}  # Armatures are not supported as dupli instances currently...
+    # Armatures are not supported as dupli instances currently...
+    dp_objtypes = objtypes - {'ARMATURE'}
     perfmon = PerfMon()
     perfmon.level_up()
 
@@ -377,7 +371,8 @@ def fbx_data_from_scene(scene, depsgraph, settings):
 
         # Do not want to systematically recreate a new mesh for dupliobject instances, kind of break purpose of those.
         if ob_obj.is_dupli:
-            org_ob_obj = ObjectWrapper(ob)  # We get the "real" object wrapper from that dupli instance.
+            # We get the "real" object wrapper from that dupli instance.
+            org_ob_obj = ObjectWrapper(ob)
             if org_ob_obj in data_meshes:
                 data_meshes[ob_obj] = data_meshes[org_ob_obj]
                 continue
@@ -413,7 +408,7 @@ def fbx_data_from_scene(scene, depsgraph, settings):
                 # potentially free the mesh created early on. So we put those meshes to bmain and
                 # free them afterwards. Not ideal but ensures correct ownerwhip.
                 tmp_me = bpy.data.meshes.new_from_object(
-                            ob_to_convert, preserve_all_data_layers=True, depsgraph=depsgraph)
+                    ob_to_convert, preserve_all_data_layers=True, depsgraph=depsgraph)
                 data_meshes[ob_obj] = (get_blenderID_key(tmp_me), tmp_me, True)
             # Change armatures back.
             for armature, pose_position in backup_pose_positions:
@@ -434,7 +429,8 @@ def fbx_data_from_scene(scene, depsgraph, settings):
     data_deformers_shape = {}
     geom_mat_co = settings.global_matrix if settings.bake_space_transform else None
     for me_key, me, _free in data_meshes.values():
-        if not (me.shape_keys and len(me.shape_keys.key_blocks) > 1):  # We do not want basis-only relative skeys...
+        # We do not want basis-only relative skeys...
+        if not (me.shape_keys and len(me.shape_keys.key_blocks) > 1):
             continue
         if me in data_deformers_shape:
             continue
@@ -604,7 +600,7 @@ def fbx_data_from_scene(scene, depsgraph, settings):
         if data_deformers_shape:
             nbr += len(data_deformers_shape)
             nbr += sum(len(shapes[2]) for shapes in data_deformers_shape.values())
-        assert(nbr != 0)
+        assert (nbr != 0)
         templates[b"Deformers"] = fbx_template_def_deformer(scene, settings, nbr_users=nbr)
 
     # No world support in FBX...
@@ -706,7 +702,7 @@ def fbx_data_from_scene(scene, depsgraph, settings):
         for me, (skin_key, ob_obj, clusters) in deformed_meshes.items():
             # skin -> geometry
             mesh_key, _me, _free = data_meshes[ob_obj]
-            assert(me == _me)
+            assert (me == _me)
             connections.append((b"OO", get_fbx_uuid_from_key(skin_key), get_fbx_uuid_from_key(mesh_key), None))
             for bo_obj, clstr_key in clusters.items():
                 # cluster -> skin
@@ -856,8 +852,6 @@ def fbx_objects_elements(root, scene_data):
 # ##### "Main" functions. #####
 
 # This func can be called with just the filepath
-
-# This func can be called with just the filepath
 def save_single(operator, scene, depsgraph, filepath="",
                 global_matrix=Matrix(),
                 apply_unit_scale=False,
@@ -886,10 +880,12 @@ def save_single(operator, scene, depsgraph, filepath="",
                 path_mode='AUTO',
                 use_mesh_edges=True,
                 use_tspace=True,
+                use_triangles=False,
                 embed_textures=False,
                 use_custom_props=False,
                 bake_space_transform=False,
                 armature_nodetype='NULL',
+                colors_type='SRGB',
                 **kwargs
                 ):
 
@@ -912,7 +908,7 @@ def save_single(operator, scene, depsgraph, filepath="",
     elif apply_scale_options == 'FBX_SCALE_CUSTOM':
         global_matrix = Matrix.Scale(unit_scale, 4) @ global_matrix
         unit_scale = global_scale
-    else: # if apply_scale_options == 'FBX_SCALE_ALL':
+    else:  # if apply_scale_options == 'FBX_SCALE_ALL':
         unit_scale = global_scale * unit_scale
 
     global_scale = global_matrix.median_scale
@@ -936,7 +932,6 @@ def save_single(operator, scene, depsgraph, filepath="",
                                                  ).to_4x4()
         bone_correction_matrix_inv = bone_correction_matrix.inverted()
 
-
     media_settings = FBXExportSettingsMedia(
         path_mode,
         os.path.dirname(bpy.data.filepath),  # base_src
@@ -952,12 +947,12 @@ def save_single(operator, scene, depsgraph, filepath="",
         operator.report, (axis_up, axis_forward), global_matrix, global_scale, apply_unit_scale, unit_scale,
         bake_space_transform, global_matrix_inv, global_matrix_inv_transposed,
         context_objects, object_types, use_mesh_modifiers, use_mesh_modifiers_render,
-        mesh_smooth_type, use_subsurf, use_mesh_edges, use_tspace,
+        mesh_smooth_type, use_subsurf, use_mesh_edges, use_tspace, use_triangles,
         armature_nodetype, use_armature_deform_only,
         add_leaf_bones, bone_correction_matrix, bone_correction_matrix_inv,
         bake_anim, bake_anim_use_all_bones, bake_anim_use_nla_strips, bake_anim_use_all_actions,
         bake_anim_step, bake_anim_simplify_factor, bake_anim_force_startend_keying,
-        False, media_settings, use_custom_props,
+        False, media_settings, use_custom_props, colors_type,
     )
 
     import bpy_extras.io_utils
@@ -968,7 +963,8 @@ def save_single(operator, scene, depsgraph, filepath="",
     # Generate some data about exported scene...
     scene_data = fbx_data_from_scene(scene, depsgraph, settings)
 
-    root = elem_empty(None, b"")  # Root element has no id, as it is not saved per se!
+    # Root element has no id, as it is not saved per se!
+    root = elem_empty(None, b"")
 
     # Mostly FBXHeaderExtension and GlobalSettings.
     fbx_header_elements(root, scene_data)
@@ -1004,6 +1000,7 @@ def save_single(operator, scene, depsgraph, filepath="",
 
     print('export finished in %.4f sec.' % (time.process_time() - start_time))
     return {'FINISHED'}
+
 
 def save(operator, context,
          filepath="",
@@ -1063,7 +1060,7 @@ def save(operator, context,
             for scene in scenes:
                 if not scene.objects:
                     continue
-                #                                      Needed to avoid having tens of 'Master Collection' entries.
+                # Needed to avoid having tens of 'Scene Collection' entries.
                 todo_collections = [(scene.collection, "_".join((scene.name, scene.collection.name)))]
                 while todo_collections:
                     coll, coll_name = todo_collections.pop()
@@ -1093,7 +1090,8 @@ def save(operator, context,
             if batch_mode in {'COLLECTION', 'SCENE_COLLECTION', 'ACTIVE_SCENE_COLLECTION'}:
                 # Collection, so that objects update properly, add a dummy scene.
                 scene = bpy.data.scenes.new(name="FBX_Temp")
-                src_scenes = {}  # Count how much each 'source' scenes are used.
+                # Count how much each 'source' scenes are used.
+                src_scenes = {}
                 for obj in getattr(data, data_obj_propname):
                     for src_sce in obj.users_scene:
                         src_scenes[src_sce] = src_scenes.setdefault(src_sce, 0) + 1
